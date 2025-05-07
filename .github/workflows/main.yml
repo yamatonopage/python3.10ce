@@ -1,0 +1,54 @@
+name: Build CeGCC Project on Debian
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bullseye
+
+    steps:
+    - name: Install build dependencies
+      run: |
+        apt-get update && apt-get install -y --no-install-recommends \
+          git build-essential bison flex m4 libgmp-dev \
+          libmpc-dev libmpfr-dev texinfo python3 wget unzip
+
+    - name: Clone cegcc-build recursively
+      run: |
+        git clone --recursive --depth 1 https://github.com/MaxKellermann/cegcc-build.git
+        cd cegcc-build
+        mkdir -p /opt/cegcc
+        chown "$(whoami):$(whoami)" /opt/cegcc
+        mkdir -p /tmp/cegcc-output
+
+    - name: Build CeGCC toolchain
+      working-directory: /tmp/cegcc-output
+      run: |
+        /cegcc-build/build.sh -j$(nproc) --prefix=/opt/cegcc
+
+    - name: Checkout your project
+      uses: actions/checkout@v3
+
+    - name: Run ce_build.sh and ce_pack.sh
+      run: |
+        chmod +x ce_build.sh ce_pack.sh ce_clean.sh || true
+        ./ce_build.sh
+        ./ce_pack.sh
+
+    - name: Upload wince_build files
+      uses: actions/upload-artifact@v3
+      with:
+        name: wince_build
+        path: wince_build/
+
+    - name: Upload tcl8.4.3 if needed
+      if: exists('tcl8.4.3')
+      uses: actions/upload-artifact@v3
+      with:
+        name: tcl8.4.3
+        path: tcl8.4.3/
