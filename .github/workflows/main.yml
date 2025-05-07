@@ -1,55 +1,41 @@
-name: Build CeGCC Project on Debian
+name: Build CeGCC
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Install build dependencies
-      run: |
-        apt-get update && apt-get install -y --no-install-recommends \
-          git build-essential bison flex m4 libgmp-dev \
-          libmpc-dev libmpfr-dev texinfo python3 wget unzip
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install --no-install-recommends -y \
+            git build-essential bison flex m4 \
+            libgmp-dev libmpc-dev libmpfr-dev texinfo
 
-    - name: Clone cegcc-build recursively
-      run: |
-        git clone --recursive --depth 1 https://github.com/MaxKellermann/cegcc-build.git
-        cd cegcc-build
-        mkdir -p /opt/cegcc
-        chown "$(whoami):$(whoami)" /opt/cegcc
-        mkdir -p /tmp/cegcc-output
+      - name: Clone cegcc-build
+        run: |
+          git clone --recursive --depth 1 https://github.com/MaxKellermann/cegcc-build.git
 
-    - name: Build CeGCC toolchain
-      working-directory: /tmp/cegcc-output
-      run: |
-        /cegcc-build/build.sh -j$(nproc) --prefix=/opt/cegcc
+      - name: Create install and build directories
+        run: |
+          mkdir -p /tmp/cegcc-output
+          mkdir -p $HOME/cegcc-install
 
-    - name: Checkout your project
-      uses: actions/checkout@v3
+      - name: Build CeGCC
+        run: |
+          cd /tmp/cegcc-output
+          $GITHUB_WORKSPACE/cegcc-build/build.sh -j$(nproc) --prefix=$HOME/cegcc-install
 
-    - name: Run ce_build.sh and ce_pack.sh
-      run: |
-        chmod +x ce_build.sh ce_pack.sh ce_clean.sh || true
-        ./ce_build.sh
-        ./ce_pack.sh
+      - name: Build PythonCE and pack
+        run: |
+          cd $GITHUB_WORKSPACE/cegcc-build
+          ./ce_build.sh
+          ./ce_pack.sh
 
-    - name: Upload tcl8.4.3 if exists
-      run: |
-        if [ -d "tcl8.4.3" ]; then
-          echo "Uploading tcl8.4.3..."
-          zip -r tcl843.zip tcl8.4.3
-        else
-          echo "tcl8.4.3 not found, skipping..."
-        fi
-    - name: Upload tcl8.4.3 artifact
-      if: success()
-      uses: actions/upload-artifact@v3
-      with:
-        name: tcl8.4.3
-        path: tcl843.zip
-
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wince_build
+          path: cegcc-build/wince_build/
