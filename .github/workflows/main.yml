@@ -40,15 +40,18 @@ jobs:
         ./ce_build.sh
         ./ce_pack.sh
 
-    - name: Upload wince_build files
-      uses: actions/upload-artifact@v3
-      with:
-        name: wince_build
-        path: wince_build/
-
-    - name: Upload tcl8.4.3 if needed
-      if: exists('tcl8.4.3')
+    - name: Upload tcl8.4.3 if exists
+      run: |
+        if [ -d "tcl8.4.3" ]; then
+          echo "Uploading tcl8.4.3..."
+          zip -r tcl843.zip tcl8.4.3
+        else
+          echo "tcl8.4.3 not found, skipping..."
+        fi
+    - name: Upload tcl8.4.3 artifact
+      if: success()
       uses: actions/upload-artifact@v3
       with:
         name: tcl8.4.3
-        path: tcl8.4.3/
+        path: tcl843.zip
+
