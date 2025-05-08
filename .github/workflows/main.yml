@@ -14,10 +14,10 @@ jobs:
             git build-essential bison flex m4 \
             libgmp-dev libmpc-dev libmpfr-dev texinfo
 
-      - name: Clone cegcc-build
+      - name: Clone cegcc-build & wincepython3
         run: |
           git clone --recursive --depth 1 https://github.com/MaxKellermann/cegcc-build.git
-
+          git clone https://github.com/brain-hackers/cpython-wince.git
       - name: Create install and build directories
         run: |
           mkdir -p /tmp/cegcc-output
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build PythonCE and pack
         run: |
-          cd $GITHUB_WORKSPACE/cegcc-build
+          cd $GITHUB_WORKSPACE/cpython-wince
           ./ce_build.sh
           ./ce_pack.sh
 
