@@ -17,7 +17,8 @@ jobs:
           sudo apt update
           sudo apt install --no-install-recommends -y \
             git build-essential bison flex m4 \
-            libgmp-dev libmpc-dev libmpfr-dev texinfo
+            libgmp-dev libmpc-dev libmpfr-dev texinfo \
+            coreutils findutils sed grep
 
       - name: Clone cegcc-build & wincepython3
         run: |
