@@ -36,7 +36,7 @@ jobs:
 
       - name: Build PythonCE and pack
         env:
-          PATH: $HOME/cegcc-install/bin:$PATH
+          PATH: $HOME/cpython-wince/bin:$PATH
         run: |
           cd $GITHUB_WORKSPACE/cpython-wince
           ./ce_build.sh
