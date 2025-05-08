@@ -7,6 +7,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
       - name: Install dependencies
         run: |
           sudo apt update
@@ -18,6 +23,7 @@ jobs:
         run: |
           git clone --recursive --depth 1 https://github.com/MaxKellermann/cegcc-build.git
           git clone https://github.com/brain-hackers/cpython-wince.git
+
       - name: Create install and build directories
         run: |
           mkdir -p /tmp/cegcc-output
@@ -29,6 +35,8 @@ jobs:
           $GITHUB_WORKSPACE/cegcc-build/build.sh -j$(nproc) --prefix=$HOME/cegcc-install
 
       - name: Build PythonCE and pack
+        env:
+          PATH: $HOME/cegcc-install/bin:$PATH
         run: |
           cd $GITHUB_WORKSPACE/cpython-wince
           ./ce_build.sh
