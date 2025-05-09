@@ -18,7 +18,7 @@ jobs:
           sudo apt install --no-install-recommends -y \
             git build-essential bison flex m4 \
             libgmp-dev libmpc-dev libmpfr-dev texinfo \
-            coreutils findutils sed grep
+            coreutils findutils sed grep unzip zip
 
       - name: Clone cegcc-build & wincepython3
         run: |
@@ -40,11 +40,13 @@ jobs:
           PATH: $HOME/cpython-wince/bin:$PATH
         run: |
           cd $GITHUB_WORKSPACE/cpython-wince
+          chmod +x ce_build.sh ce_pack.sh ce_clean.sh || true
           ./ce_build.sh
           ./ce_pack.sh
+          zip -r wince_build.zip build/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wince_build
-          path: cegcc-build/wince_build/
+          path: ${{ github.workspace }}/cpython-wince/wince_build.zip
